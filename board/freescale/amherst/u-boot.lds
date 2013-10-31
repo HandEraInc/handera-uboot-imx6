@@ -38,9 +38,9 @@ SECTIONS
 	{
 	  /* WARNING - the following is hand-optimized to fit within	*/
 	  /* the sector layout of our flash chips!	XXX FIXME XXX	*/
-	  board/freescale/mx6solo_module/flash_header.o	(.text.flasheader)
+	  board/freescale/amherst/flash_header.o	(.text.flasheader)
 	  cpu/arm_cortexa8/start.o
-	  board/freescale/mx6solo_module/libmx6solo_module.a	(.text)
+	  board/freescale/amherst/libamherst.a	(.text)
 	  lib_arm/libarm.a		(.text)
 	  net/libnet.a			(.text)
 	  drivers/mtd/libmtd.a		(.text)
