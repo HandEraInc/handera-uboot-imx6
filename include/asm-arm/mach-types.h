@@ -42218,6 +42218,19 @@ extern unsigned int __machine_arch_type;
  * These have not yet been registered
  */
 
+#define MACH_TYPE_AMHERST       8888
+#ifdef CONFIG_MACH_AMHERST
+# ifdef machine_arch_type
+#  undef machine_arch_type
+#  define machine_arch_type	__machine_arch_type
+# else
+#  define machine_arch_type	MACH_TYPE_AMHERST
+# endif
+# define machine_is_amherst()	(machine_arch_type == MACH_TYPE_AMHERST)
+#else
+# define machine_is_amherst()	(0)
+#endif
+
 #ifndef machine_arch_type
 #define machine_arch_type	__machine_arch_type
 #endif

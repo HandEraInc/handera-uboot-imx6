@@ -3323,6 +3323,10 @@ mx6q_arm2_iram_config	: unconfig
 		}
 	@$(MKCONFIG) $(@:_config=) arm arm_cortexa8 mx6q_arm2 freescale mx6
 
+amherst_mfg_config		\
+amherst_config		: unconfig
+	@$(MKCONFIG) $(@:_config=) arm arm_cortexa8 amherst freescale mx6
+
 mx6solo_sabresd_config			\
 mx6solo_sabresd_mfg_config		\
 mx6solo_sabresd_android_config             \
