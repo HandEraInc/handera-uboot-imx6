@@ -1126,6 +1126,101 @@ void setup_splash_image(void)
 #endif
 #endif /* !CONFIG_MXC_EPDC */
 
+#ifdef CONFIG_MXC_FEC
+int mx6_rgmii_rework(char *devname, int phy_addr)
+{
+	return 0;
+}
+
+iomux_v3_cfg_t enet_pads[] = {
+	MX6DL_PAD_ENET_MDIO__ENET_MDIO,
+	MX6DL_PAD_ENET_MDC__ENET_MDC,
+	MX6DL_PAD_ENET_TXD0__ENET_TDATA_0,
+	MX6DL_PAD_ENET_TXD1__ENET_TDATA_1,
+	MX6DL_PAD_ENET_TX_EN__ENET_TX_EN,
+	MX6DL_PAD_ENET_RXD0__ENET_RDATA_0,
+	MX6DL_PAD_ENET_RXD1__ENET_RDATA_1,
+	MX6DL_PAD_ENET_RX_ER__ENET_RX_ER,
+	MX6DL_PAD_ENET_CRS_DV__ENET_RX_EN,
+	MX6DL_PAD_GPIO_16__ENET_ANATOP_ETHERNET_REF_OUT,
+};
+
+void enet_board_init(void)
+{
+	unsigned int reg;
+
+	iomux_v3_cfg_t enet_reset =
+			(MX6DL_PAD_GPIO_3__GPIO_1_3 &
+			~MUX_PAD_CTRL_MASK)           |
+			 MUX_PAD_CTRL(0x88);
+
+	mxc_iomux_v3_setup_multiple_pads(enet_pads,
+			ARRAY_SIZE(enet_pads));
+	mxc_iomux_v3_setup_pad(enet_reset);
+
+	// Configure nINT pint.
+	// Only need to configure the mask register to enable
+	// the interrupt. Default for direction and interrupt
+	// configuration is input and low level already.
+	mxc_iomux_v3_setup_pad(MX6DL_PAD_KEY_COL2__GPIO_4_10);
+	reg = readl(GPIO4_BASE_ADDR + GPIO_IMR);
+	reg |= (1 << 10);
+	writel(reg, GPIO4_BASE_ADDR + GPIO_IMR);
+
+	/* phy reset: gpio1-3 */
+	reg = readl(GPIO1_BASE_ADDR + GPIO_DR);
+	reg &= ~(1 << 3);
+	writel(reg, GPIO1_BASE_ADDR + GPIO_DR);
+
+	reg = readl(GPIO1_BASE_ADDR + GPIO_GDIR);
+	reg |= (1 << 3);
+	writel(reg, GPIO1_BASE_ADDR + GPIO_GDIR);
+
+	udelay(750);
+
+	reg = readl(GPIO1_BASE_ADDR + GPIO_DR);
+	reg |= (1 << 3);
+	writel(reg, GPIO1_BASE_ADDR + GPIO_DR);
+
+	/* wait for reset */
+	udelay(10000);
+}
+
+#define ANATOP_PLL_LOCK                 0x80000000
+#define ANATOP_PLL_PWDN_MASK            0x00001000
+#define ANATOP_PLL_BYPASS_MASK          0x00010000
+#define ANATOP_FEC_PLL_ENABLE_MASK      0x00002000
+
+static int setup_fec(void)
+{
+	u32 reg = 0;
+	s32 timeout = 100000;
+
+	reg = readl(IOMUXC_BASE_ADDR + 0x4);
+	reg |= (0x1 << 21);
+	writel(reg, IOMUXC_BASE_ADDR + 0x4);
+
+	/* Enable PLLs */
+	reg = readl(ANATOP_BASE_ADDR + 0xe0);	/* ENET PLL */
+	if ((reg & ANATOP_PLL_PWDN_MASK) || (!(reg & ANATOP_PLL_LOCK))) {
+		reg &= ~ANATOP_PLL_PWDN_MASK;
+		writel(reg, ANATOP_BASE_ADDR + 0xe0);
+		while (timeout--) {
+			if (readl(ANATOP_BASE_ADDR + 0xe0) & ANATOP_PLL_LOCK)
+				break;
+		}
+		if (timeout <= 0)
+			return -1;
+	}
+
+	/* Enable FEC clock */
+	reg |= ANATOP_FEC_PLL_ENABLE_MASK;
+	reg &= ~ANATOP_PLL_BYPASS_MASK;
+	writel(reg, ANATOP_BASE_ADDR + 0xe0);
+	return 0;
+}
+#endif
+
 int board_init(void)
 {
 /* need set Power Supply Glitch to 0x41736166
@@ -1151,6 +1246,9 @@ int board_init(void)
 	gd->bd->bi_boot_params = PHYS_SDRAM_1 + 0x100;
 
 	setup_uart();
+#ifdef CONFIG_MXC_FEC
+	setup_fec();
+#endif
 
 #ifdef CONFIG_I2C_MXC
 	setup_i2c(CONFIG_SYS_I2C_PORT);
@@ -1215,103 +1313,6 @@ int board_late_init(void)
 {
 	return 0;
 }
-
-#ifdef CONFIG_MXC_FEC
-static int phy_read(char *devname, unsigned char addr, unsigned char reg,
-		    unsigned short *pdata)
-{
-	int ret = miiphy_read(devname, addr, reg, pdata);
-	if (ret)
-		printf("Error reading from %s PHY addr=%02x reg=%02x\n",
-		       devname, addr, reg);
-	return ret;
-}
-
-static int phy_write(char *devname, unsigned char addr, unsigned char reg,
-		     unsigned short value)
-{
-	int ret = miiphy_write(devname, addr, reg, value);
-	if (ret)
-		printf("Error writing to %s PHY addr=%02x reg=%02x\n", devname,
-		       addr, reg);
-	return ret;
-}
-
-// MOE: Remove?
-int mx6_rgmii_rework(char *devname, int phy_addr)
-{
-	unsigned short val;
-
-	/* To enable AR8031 ouput a 125MHz clk from CLK_25M */
-	phy_write(devname, phy_addr, 0xd, 0x7);
-	phy_write(devname, phy_addr, 0xe, 0x8016);
-	phy_write(devname, phy_addr, 0xd, 0x4007);
-	phy_read(devname, phy_addr, 0xe, &val);
-
-	val &= 0xffe3;
-	val |= 0x18;
-	phy_write(devname, phy_addr, 0xe, val);
-
-	/* introduce tx clock delay */
-	phy_write(devname, phy_addr, 0x1d, 0x5);
-	phy_read(devname, phy_addr, 0x1e, &val);
-	val |= 0x0100;
-	phy_write(devname, phy_addr, 0x1e, val);
-
-	return 0;
-}
-
-iomux_v3_cfg_t enet_pads[] = {
-	MX6DL_PAD_ENET_MDIO__ENET_MDIO,
-	MX6DL_PAD_ENET_MDC__ENET_MDC,
-	MX6DL_PAD_ENET_TXD0__ENET_TDATA_0,
-	MX6DL_PAD_ENET_TXD1__ENET_TDATA_1,
-	MX6DL_PAD_ENET_TX_EN__ENET_TX_EN,
-	MX6DL_PAD_ENET_RXD0__ENET_RDATA_0,
-	MX6DL_PAD_ENET_RXD1__ENET_RDATA_1,
-	MX6DL_PAD_ENET_RX_ER__ENET_RX_ER,
-	MX6DL_PAD_ENET_CRS_DV__ENET_RX_EN,
-	MX6DL_PAD_GPIO_16__ENET_ANATOP_ETHERNET_REF_OUT,
-};
-
-void enet_board_init(void)
-{
-	unsigned int reg;
-
-	iomux_v3_cfg_t enet_reset =
-			(MX6DL_PAD_GPIO_3__GPIO_1_3 &
-			~MUX_PAD_CTRL_MASK)           |
-			 MUX_PAD_CTRL(0x88);
-
-	mxc_iomux_v3_setup_multiple_pads(enet_pads,
-			ARRAY_SIZE(enet_pads));
-	mxc_iomux_v3_setup_pad(enet_reset);
-
-	// Configure nINT pint.
-	// Only need to configure the mask register to enable
-	// the interrupt. Default for direction and interrupt
-	// configuration is input and low level already.
-	mxc_iomux_v3_setup_pad(MX6DL_PAD_KEY_COL2__GPIO_4_10);
-	reg = readl(GPIO4_BASE_ADDR + GPIO_IMR);
-	reg |= (1 << 10);
-	writel(reg, GPIO4_BASE_ADDR + GPIO_IMR);
-
-	/* phy reset: gpio1-3 */
-	reg = readl(GPIO1_BASE_ADDR + GPIO_DR);
-	reg &= ~(1 << 3);
-	writel(reg, GPIO1_BASE_ADDR + GPIO_DR);
-
-	reg = readl(GPIO1_BASE_ADDR + GPIO_GDIR);
-	reg |= (1 << 3);
-	writel(reg, GPIO1_BASE_ADDR + GPIO_GDIR);
-
-	udelay(500);
-
-	reg = readl(GPIO1_BASE_ADDR + GPIO_DR);
-	reg |= (1 << 3);
-	writel(reg, GPIO1_BASE_ADDR + GPIO_DR);
-}
-#endif
 
 int checkboard(void)
 {
