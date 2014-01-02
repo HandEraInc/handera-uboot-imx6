@@ -130,13 +130,12 @@
 	"bootargs_mmc=setenv bootargs ${bootargs} ip=dhcp "		\
 		"root=/dev/mmcblk0p1 rootwait\0"			\
 	"bootargs_SD=setenv bootargs ${bootargs} ip=dhcp "		\
-		"root=/dev/mmcblk0p1 rootwait\0"			\
+		"root=/dev/mmcblk1p2 rootwait\0"			\
 	"bootcmd_mmc=run bootargs_base bootargs_mmc; "			\
 	"mmc dev 3; "							\
 	"mmc read ${loadaddr} 0x800 0x2000; bootm\0"			\
 	"bootcmd_SD=run bootargs_base bootargs_SD; "			\
-	"mmc dev 1; "							\
-	"mmc read ${loadaddr} 0x800 0x2000; bootm\0"			\
+	"fatload mmc 1 ${loadaddr} uImage; bootm\0"                     \
 	"bootcmd=run bootcmd_mmc\0"					\
 
 

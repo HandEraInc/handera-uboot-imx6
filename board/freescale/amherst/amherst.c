@@ -1311,6 +1311,14 @@ int check_recovery_cmd_file(void)
 
 int board_late_init(void)
 {
+	switch (get_boot_device()) {
+	case SD_BOOT:
+		setenv("bootcmd", "run bootcmd_SD");
+		break;
+	default:
+		break;
+	}
+
 	return 0;
 }
 
