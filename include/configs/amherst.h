@@ -128,9 +128,13 @@
 	"bootcmd_net=run bootargs_base bootargs_nfs; "			\
 		"tftpboot ${loadaddr} ${kernel}; bootm\0"		\
 	"bootargs_mmc=setenv bootargs ${bootargs} ip=dhcp "		\
-		"root=/dev/mmcblk0p1 rootwait\0"			\
+		"root=/dev/mmcblk0p1 rootwait "				\
+		"video=mxcfb0:dev=hdmi,1920x1080M@60,if=RGB24 " 	\
+		"video=mxcfb1:dev=ldb,LDB-1080P75,if=RGB666\0" 		\
 	"bootargs_SD=setenv bootargs ${bootargs} ip=dhcp "		\
-		"root=/dev/mmcblk1p2 rootwait\0"			\
+		"root=/dev/mmcblk1p2 rootwait "				\
+		"video=mxcfb0:dev=hdmi,1920x1080M@60,if=RGB24 " 	\
+		"video=mxcfb1:dev=ldb,LDB-1080P75,if=RGB666\0" 		\
 	"bootcmd_mmc=run bootargs_base bootargs_mmc; "			\
 	"mmc dev 3; "							\
 	"mmc read ${loadaddr} 0x800 0x2000; bootm\0"			\
@@ -296,7 +300,8 @@
 /*
  * SPLASH SCREEN Configs
  */
-//#define CONFIG_SPLASH_SCREEN
+#define CONFIG_SPLASH_SCREEN
+#define CONFIG_LCD_M215HW01
 #ifdef CONFIG_SPLASH_SCREEN
 	/*
 	 * Framebuffer and LCD
@@ -322,7 +327,22 @@
 	#define CONFIG_SPLASH_IMG_OFFSET		0x4c000
 	#define CONFIG_SPLASH_IMG_SIZE			0x19000
 #endif
-#else /* !CONFIG_MXC_EPDC */
+#elif defined(CONFIG_LCD_M215HW01)
+	#define CONFIG_IPU_V3H
+	#define CONFIG_VIDEO_MX5
+	#define CONFIG_IPU_CLKRATE			260000000
+	#define CONFIG_SYS_CONSOLE_ENV_OVERWRITE
+	#define CONFIG_SYS_CONSOLE_OVERWRITE_ROUTINE
+	#define LCD_BPP					LCD_COLOR16
+	#define CONFIG_CMD_BMP
+	#define CONFIG_BMP_8BPP
+	#define CONFIG_SPLASH_SCREEN_ALIGN
+	#define CONFIG_SYS_WHITE_ON_BLACK
+
+	#define CONFIG_IMX_PWM
+	#define IMX_PWM1_BASE    PWM1_BASE_ADDR
+	#define IMX_PWM2_BASE    PWM2_BASE_ADDR
+#else /* !CONFIG_MXC_EPDC !CONFIG_LCD_M215HW01 */
 	#define CONFIG_IPU_V3H
 	#define CONFIG_VIDEO_MX5
 	#define CONFIG_IPU_CLKRATE			260000000

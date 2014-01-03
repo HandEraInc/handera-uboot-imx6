@@ -86,8 +86,7 @@
 DECLARE_GLOBAL_DATA_PTR;
 
 static enum boot_device boot_dev;
-// MOE: Remove?
-//#define GPIO_VOL_DN_KEY IMX_GPIO_NR(1, 5)
+
 #define USB_OTG_PWR IMX_GPIO_NR(3, 22)
 #define USB_H1_POWER IMX_GPIO_NR(3, 31)
 
@@ -116,11 +115,11 @@ extern int ipuv3_fb_init(struct fb_videomode *mode, int di,
 			ipu_di_clk_parent_t di_clk_parent,
 			int di_clk_val);
 
-static struct fb_videomode lvds_xga = {
-	 "XGA", 60, 1024, 768, 15385, 220, 40, 21, 7, 60, 10,
-	 FB_SYNC_EXT,
+static struct fb_videomode lvds_M215HW01 = {
+	 "M215HW01", 60, 1920, 1080, 13333, 220, 40, 21, 7, 100, 40,
+	 0, //FB_SYNC_EXT,
 	 FB_VMODE_NONINTERLACED,
-	 0,
+	 FB_MODE_IS_DETAILED,
 };
 
 vidinfo_t panel_info;
@@ -264,27 +263,6 @@ static void setup_uart(void)
 	/* UART1 RXD */
 	mxc_iomux_v3_setup_pad(MX6DL_PAD_CSI0_DAT11__UART1_RXD);
 }
-
-#ifdef CONFIG_VIDEO_MX5
-void setup_lvds_poweron(void)
-{
-	int reg;
-	/* AUX_5V_EN: GPIO(6, 10) */
-#ifdef CONFIG_MX6DL
-	mxc_iomux_v3_setup_pad(MX6DL_PAD_NANDF_RB0__GPIO_6_10);
-#else
-	mxc_iomux_v3_setup_pad(MX6Q_PAD_NANDF_RB0__GPIO_6_10);
-#endif
-
-	reg = readl(GPIO6_BASE_ADDR + GPIO_GDIR);
-	reg |= (1 << 10);
-	writel(reg, GPIO6_BASE_ADDR + GPIO_GDIR);
-
-	reg = readl(GPIO6_BASE_ADDR + GPIO_DR);
-	reg |= (1 << 10);
-	writel(reg, GPIO6_BASE_ADDR + GPIO_DR);
-}
-#endif
 
 #ifdef CONFIG_I2C_MXC
 #define I2C1_SDA_GPIO5_26_BIT_MASK  (1 << 26)
@@ -957,15 +935,15 @@ void lcd_enable(void)
 	*/
 	g_ipu_hw_rev = IPUV3_HW_REV_IPUV3H;
 
-	imx_pwm_config(pwm0, 25000, 50000);
-	imx_pwm_enable(pwm0);
+	//imx_pwm_config(pwm0, 25000, 50000);
+	//imx_pwm_enable(pwm0);
 
 	/* PWM backlight */
-	mxc_iomux_v3_setup_pad(MX6DL_PAD_SD1_DAT3__PWM1_PWMO);
+	//mxc_iomux_v3_setup_pad(MX6DL_PAD_SD1_DAT3__PWM1_PWMO);
 	/* LVDS panel CABC_EN0 */
-	mxc_iomux_v3_setup_pad(MX6DL_PAD_NANDF_CS2__GPIO_6_15);
+	//mxc_iomux_v3_setup_pad(MX6DL_PAD_NANDF_CS2__GPIO_6_15);
 	/* LVDS panel CABC_EN1 */
-	mxc_iomux_v3_setup_pad(MX6DL_PAD_NANDF_CS3__GPIO_6_16);
+	//mxc_iomux_v3_setup_pad(MX6DL_PAD_NANDF_CS3__GPIO_6_16);
 	/*
 	 * Set LVDS panel CABC_EN0 to low to disable
 	 * CABC function. This function will turn backlight
@@ -973,26 +951,26 @@ void lcd_enable(void)
 	 * simply disable it to get rid of annoying unstable
 	 * backlight phenomena.
 	 */
-	reg = readl(GPIO6_BASE_ADDR + GPIO_GDIR);
+/*	reg = readl(GPIO6_BASE_ADDR + GPIO_GDIR);
 	reg |= (1 << 15);
 	writel(reg, GPIO6_BASE_ADDR + GPIO_GDIR);
 
 	reg = readl(GPIO6_BASE_ADDR + GPIO_DR);
 	reg &= ~(1 << 15);
 	writel(reg, GPIO6_BASE_ADDR + GPIO_DR);
-
+*/
 	/*
 	 * Set LVDS panel CABC_EN1 to low to disable
 	 * CABC function.
 	 */
-	reg = readl(GPIO6_BASE_ADDR + GPIO_GDIR);
+/*	reg = readl(GPIO6_BASE_ADDR + GPIO_GDIR);
 	reg |= (1 << 16);
 	writel(reg, GPIO6_BASE_ADDR + GPIO_GDIR);
 
 	reg = readl(GPIO6_BASE_ADDR + GPIO_DR);
 	reg &= ~(1 << 16);
 	writel(reg, GPIO6_BASE_ADDR + GPIO_DR);
-
+*/
 	/* Disable ipu1_clk/ipu1_di_clk_x/ldb_dix_clk. */
 	reg = readl(CCM_BASE_ADDR + CLKCTL_CCGR3);
 	reg &= ~0xC033;
@@ -1073,8 +1051,8 @@ void lcd_enable(void)
 		writel(reg, CCM_BASE_ADDR + CLKCTL_CCGR3);
 	}
 
-	ret = ipuv3_fb_init(&lvds_xga, di, IPU_PIX_FMT_RGB666,
-			DI_PCLK_LDB, 65000000);
+	ret = ipuv3_fb_init(&lvds_M215HW01, di, IPU_PIX_FMT_RGB666,
+			DI_PCLK_LDB, 75000000);
 	if (ret)
 		puts("LCD cannot be configured\n");
 
@@ -1098,8 +1076,8 @@ void lcd_enable(void)
 void panel_info_init(void)
 {
 	panel_info.vl_bpix = LCD_BPP;
-	panel_info.vl_col = lvds_xga.xres;
-	panel_info.vl_row = lvds_xga.yres;
+	panel_info.vl_col = lvds_M215HW01.xres;
+	panel_info.vl_row = lvds_M215HW01.yres;
 	panel_info.cmap = colormap;
 }
 #endif
@@ -1254,12 +1232,8 @@ int board_init(void)
 	setup_i2c(CONFIG_SYS_I2C_PORT);
 #endif
 
-/*
-// MOE: Remove? 
-#ifdef CONFIG_VIDEO_MX5
-	// Enable lvds power
-	setup_lvds_poweron();
 
+#ifdef CONFIG_VIDEO_MX5
 	panel_info_init();
 
 	gd->fb_base = CONFIG_FB_BASE;
@@ -1267,7 +1241,6 @@ int board_init(void)
 	gd->fb_base = ioremap_nocache(iomem_to_phys(gd->fb_base), 0);
 #endif
 #endif
-*/
 
 /*
 // MOE: Remove? 
