@@ -1,7 +1,8 @@
 /*
- * Copyright (C) 2013-2014 HandEra, Inc.
+ * Copyright (C) 2013 HandEra, Inc.
  *
  * Configuration settings for the MX6Quad Amherst board.
+ * The board is configured with QUAD and 32-bit DDR bus-width.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -25,13 +26,10 @@
 #include <asm/arch/mx6.h>
 
  /* High Level Configuration Options */
-#define CONFIG_MFG
 #define CONFIG_ARMV7	/* This is armv7 Cortex-A9 CPU core */
 #define CONFIG_MXC
-#define CONFIG_MX6DL
-#define CONFIG_MX6DL_DDR3
-#define CONFIG_MX6DL_SABRESD
-#define CONFIG_DDR_32BIT /* for DDR 32bit */
+#define CONFIG_MX6Q
+#define CONFIG_MX6Q_SABRESD
 #define CONFIG_FLASH_HEADER
 #define CONFIG_FLASH_HEADER_OFFSET 0x400
 #define CONFIG_MX6_CLK32	   32768
@@ -56,9 +54,7 @@
 #define CONFIG_REVISION_TAG
 #define CONFIG_SETUP_MEMORY_TAGS
 #define CONFIG_INITRD_TAG
-
 #define CONFIG_MXC_GPIO
-
 /*
  * Size of malloc() pool
  */
@@ -109,36 +105,55 @@
 
 #undef CONFIG_CMD_IMLS
 
-#define CONFIG_BOOTDELAY 0
+#define CONFIG_CMD_IMX_DOWNLOAD_MODE
+
+#define CONFIG_BOOTDELAY 3
 
 #define CONFIG_PRIME	"FEC0"
 
 #define CONFIG_LOADADDR		0x10800000	/* loadaddr env var */
 #define CONFIG_RD_LOADADDR	(CONFIG_LOADADDR + 0x300000)
 
-#define CONFIG_BOOTARGS         "console=ttymxc0,115200 rdinit=/linuxrc "\
-				"enable_wait_mode=off nosmp"
-#define CONFIG_BOOTCOMMAND      "bootm 0x10800000 0x10c00000"
-
 #define	CONFIG_EXTRA_ENV_SETTINGS					\
-		"netdev=eth0\0"						\
-		"ethprime=FEC0\0"					\
-		"uboot=u-boot.bin\0"			\
-		"kernel=uImage\0"				\
+	"netdev=eth0\0"							\
+	"ethprime=FEC0\0"						\
+	"uboot=u-boot.bin\0"						\
+	"kernel=uImage\0"						\
+	"nfsroot=/opt/eldk/arm\0"					\
+	"bootargs_base=setenv bootargs console=ttymxc0,115200 \0"	\
+	"bootargs_nfs=setenv bootargs ${bootargs} root=/dev/nfs "	\
+		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0"	\
+	"bootcmd_net=run bootargs_base bootargs_nfs; "			\
+		"tftpboot ${loadaddr} ${kernel}; bootm\0"		\
+	"bootargs_mmc=setenv bootargs ${bootargs} ip=dhcp "		\
+		"root=/dev/mmcblk0p1 rootwait "				\
+		"video=mxcfb0:dev=hdmi,1920x1080M@60,if=RGB24 " 	\
+		"video=mxcfb1:dev=ldb,LDB-1080P75,if=RGB666\0" 		\
+	"bootargs_SD=setenv bootargs ${bootargs} ip=dhcp "		\
+		"root=/dev/mmcblk1p2 rootwait "				\
+		"video=mxcfb0:dev=hdmi,1920x1080M@60,if=RGB24 " 	\
+		"video=mxcfb1:dev=ldb,LDB-1080P75,if=RGB666\0" 		\
+	"bootcmd_mmc=run bootargs_base bootargs_mmc; "			\
+	"mmc dev 3; "							\
+	"mmc read ${loadaddr} 0x800 0x2000; bootm\0"			\
+	"bootcmd_SD=run bootargs_base bootargs_SD; "			\
+	"fatload mmc 1 ${loadaddr} uImage; bootm\0"                     \
+	"bootcmd=run bootcmd_mmc\0"					\
 
-#define CONFIG_ARP_TIMEOUT	200UL
+
+#define CONFIG_ARP_TIMEOUT		200UL
 
 /*
  * Miscellaneous configurable options
  */
 #define CONFIG_SYS_LONGHELP		/* undef to save memory */
-#define CONFIG_SYS_PROMPT		"MX6Solo SABRESD-MFG U-Boot > "
+#define CONFIG_SYS_PROMPT		"HandEra Amherst U-Boot > "
 #define CONFIG_AUTO_COMPLETE
-#define CONFIG_SYS_CBSIZE		256	/* Console I/O Buffer Size */
+#define CONFIG_SYS_CBSIZE		1024	/* Console I/O Buffer Size */
 /* Print Buffer Size */
 #define CONFIG_SYS_PBSIZE (CONFIG_SYS_CBSIZE + sizeof(CONFIG_SYS_PROMPT) + 16)
-#define CONFIG_SYS_MAXARGS	16	/* max number of command args */
-#define CONFIG_SYS_BARGSIZE CONFIG_SYS_CBSIZE /* Boot Argument Buffer Size */
+#define CONFIG_SYS_MAXARGS		16	/* max number of command args */
+#define CONFIG_SYS_BARGSIZE CONFIG_SYS_CBSIZE   /* Boot Argument Buffer Size */
 
 #define CONFIG_SYS_MEMTEST_START	0x10000000	/* memtest works on */
 #define CONFIG_SYS_MEMTEST_END		0x10010000
@@ -151,14 +166,19 @@
 
 #define CONFIG_CMDLINE_EDITING
 
-#define CONFIG_FEC0_IOBASE	ENET_BASE_ADDR
-#define CONFIG_FEC0_PINMUX	-1
-#define CONFIG_FEC0_MIIBASE	-1
+#define CONFIG_RMII_QUIRK
+#define CONFIG_FEC0_IOBASE		ENET_BASE_ADDR
+#define CONFIG_FEC0_PINMUX		-1
+#define CONFIG_FEC0_MIIBASE		-1
 #define CONFIG_GET_FEC_MAC_ADDR_FROM_IIM
 #define CONFIG_MXC_FEC
-#define CONFIG_FEC0_PHY_ADDR		1
+//#define CONFIG_FEC0_PHY_ADDR		1
+#define CONFIG_FEC0_PHY_ADDR		0xFF
+#define CONFIG_DISCOVER_PHY
 #define CONFIG_ETH_PRIME
-#define CONFIG_RMII
+//#define CONFIG_RMII
+#define CONFIG_MII
+//#define CONFIG_MII_GASKET
 #define CONFIG_CMD_MII
 #define CONFIG_CMD_DHCP
 #define CONFIG_CMD_PING
@@ -171,8 +191,8 @@
  */
 #ifdef CONFIG_CMD_IMXOTP
 	#define CONFIG_IMX_OTP
-	#define IMX_OTP_BASE			OCOTP_BASE_ADDR
-	#define IMX_OTP_ADDR_MAX		0x7F
+	#define IMX_OTP_BASE		OCOTP_BASE_ADDR
+	#define IMX_OTP_ADDR_MAX	0x7F
 	#define IMX_OTP_DATA_ERROR_VAL	0xBADABADA
 #endif
 
@@ -180,30 +200,31 @@
  * I2C Configs
  */
 #ifdef CONFIG_CMD_I2C
-	#define CONFIG_HARD_I2C         1
-	#define CONFIG_I2C_MXC          1
-	#define CONFIG_SYS_I2C_PORT             I2C3_BASE_ADDR
+	#define CONFIG_HARD_I2C
+	#define CONFIG_I2C_MXC			1
+	#define CONFIG_SYS_I2C_PORT             I2C2_BASE_ADDR
 	#define CONFIG_SYS_I2C_SPEED            100000
-	#define CONFIG_SYS_I2C_SLAVE            0x1f
+	#define CONFIG_SYS_I2C_SLAVE            0x8
+	#define CONFIG_MX6_INTER_LDO_BYPASS	0
 #endif
 
 /*
  * SPI Configs
  */
 #ifdef CONFIG_CMD_SF
-	#define CONFIG_FSL_SF		1
-	#define CONFIG_SPI_FLASH_IMX_M25PXX	1
-	#define CONFIG_SPI_FLASH_CS	1
+	#define CONFIG_FSL_SF
+	#define CONFIG_SPI_FLASH_IMX_M25PXX
+	#define CONFIG_SPI_FLASH_CS		0
 	#define CONFIG_IMX_ECSPI
-	#define IMX_CSPI_VER_2_3	1
-	#define MAX_SPI_BYTES		(64 * 4)
+	#define IMX_CSPI_VER_2_3		1
+	#define MAX_SPI_BYTES			(64 * 4)
 #endif
 
 /* Regulator Configs */
 #ifdef CONFIG_CMD_REGUL
 	#define CONFIG_ANATOP_REGULATOR
-	#define CONFIG_CORE_REGULATOR_NAME "vdd1p1"
-	#define CONFIG_PERIPH_REGULATOR_NAME "vdd1p1"
+	#define CONFIG_CORE_REGULATOR_NAME	"vdd1p1"
+	#define CONFIG_PERIPH_REGULATOR_NAME	"vdd1p1"
 #endif
 
 /*
@@ -215,41 +236,18 @@
 	#define CONFIG_IMX_MMC
 	#define CONFIG_SYS_FSL_USDHC_NUM        4
 	#define CONFIG_SYS_FSL_ESDHC_ADDR       0
-	#define CONFIG_SYS_MMC_ENV_DEV  2
-	#define CONFIG_DOS_PARTITION	1
-	#define CONFIG_CMD_FAT		1
-	#define CONFIG_CMD_EXT2		1
+	#define CONFIG_SYS_MMC_ENV_DEV		2
+	#define CONFIG_DOS_PARTITION
+	#define CONFIG_CMD_FAT
+	#define CONFIG_CMD_EXT2
 
 	/* detect whether SD1, 2, 3, or 4 is boot device */
 	#define CONFIG_DYNAMIC_MMC_DEVNO
 
 	/* SD3 and SD4 are 8 bit */
-	#define CONFIG_MMC_8BIT_PORTS   0xC
+	#define CONFIG_MMC_8BIT_PORTS		0xC
 	/* Setup target delay in DDR mode for each SD port */
 	#define CONFIG_GET_DDR_TARGET_DELAY
-#endif
-
-/*
- * GPMI Nand Configs
- */
-/* #define CONFIG_CMD_NAND */
-
-#ifdef CONFIG_CMD_NAND
-	#define CONFIG_NAND_GPMI
-	#define CONFIG_GPMI_NFC_SWAP_BLOCK_MARK
-	#define CONFIG_GPMI_NFC_V2
-
-	#define CONFIG_GPMI_REG_BASE	GPMI_BASE_ADDR
-	#define CONFIG_BCH_REG_BASE	BCH_BASE_ADDR
-
-	#define NAND_MAX_CHIPS		8
-	#define CONFIG_SYS_NAND_BASE		0x40000000
-	#define CONFIG_SYS_MAX_NAND_DEVICE	1
-
-	/* NAND is the unique module invoke APBH-DMA */
-	#define CONFIG_APBH_DMA
-	#define CONFIG_APBH_DMA_V2
-	#define CONFIG_MXS_DMA_REG_BASE	ABPHDMA_BASE_ADDR
 #endif
 
 /*-----------------------------------------------------------------------
@@ -264,7 +262,7 @@
  */
 #define CONFIG_NR_DRAM_BANKS	1
 #define PHYS_SDRAM_1		CSD0_DDR_BASE_ADDR
-#define PHYS_SDRAM_1_SIZE	(512 * 1024 * 1024)
+#define PHYS_SDRAM_1_SIZE	(1u * 1024 * 1024 * 1024)
 #define iomem_valid_addr(addr, size) \
 	(addr >= PHYS_SDRAM_1 && addr <= (PHYS_SDRAM_1 + PHYS_SDRAM_1_SIZE))
 
@@ -274,30 +272,89 @@
 #define CONFIG_SYS_NO_FLASH
 
 /* Monitor at beginning of flash */
-/* #define CONFIG_FSL_ENV_IN_MMC */
+#define CONFIG_FSL_ENV_IN_MMC
 /* #define CONFIG_FSL_ENV_IN_NAND */
-/* #define CONFIG_FSL_ENV_IN_SATA */
 
-#define CONFIG_ENV_SECT_SIZE    (128 * 1024)
+#define CONFIG_ENV_SECT_SIZE    (8 * 1024)
 #define CONFIG_ENV_SIZE         CONFIG_ENV_SECT_SIZE
-#define CONFIG_ENV_IS_NOWHERE   1
 
+#if defined(CONFIG_FSL_ENV_IN_NAND)
+	#define CONFIG_ENV_IS_IN_NAND 1
+	#define CONFIG_ENV_OFFSET	0x100000
+#elif defined(CONFIG_FSL_ENV_IN_MMC)
+	#define CONFIG_ENV_IS_IN_MMC	1
+	#define CONFIG_ENV_OFFSET	(768 * 1024)
+#elif defined(CONFIG_FSL_ENV_IN_SF)
+	#define CONFIG_ENV_IS_IN_SPI_FLASH	1
+	#define CONFIG_ENV_SPI_CS		1
+	#define CONFIG_ENV_OFFSET       (768 * 1024)
+#else
+	#define CONFIG_ENV_IS_NOWHERE	1
+#endif
+
+/* #define CONFIG_SPLASH_SCREEN */
+/* #define CONFIG_MXC_EPDC */
+
+/*
+ * SPLASH SCREEN Configs
+ */
+#define CONFIG_SPLASH_SCREEN
+#define CONFIG_LCD_M215HW01
 #ifdef CONFIG_SPLASH_SCREEN
 	/*
 	 * Framebuffer and LCD
 	 */
 	#define CONFIG_LCD
+	#define CONFIG_FB_BASE				(TEXT_BASE + 0x300000)
+	#define CONFIG_SYS_CONSOLE_IS_IN_ENV
+#ifdef CONFIG_MXC_EPDC
+	#undef LCD_TEST_PATTERN
+	/* #define CONFIG_SPLASH_IS_IN_MMC			1 */
+	#define LCD_BPP					LCD_MONOCHROME
+	/* #define CONFIG_SPLASH_SCREEN_ALIGN		1 */
+
+	#define CONFIG_MXC_EPDC				1
+
+	#define CONFIG_WORKING_BUF_ADDR			(TEXT_BASE + 0x100000)
+	#define CONFIG_WAVEFORM_BUF_ADDR		(TEXT_BASE + 0x200000)
+	#define CONFIG_WAVEFORM_FILE_OFFSET		0x600000
+	#define CONFIG_WAVEFORM_FILE_SIZE		0xF0A00
+	#define CONFIG_WAVEFORM_FILE_IN_MMC
+
+#ifdef CONFIG_SPLASH_IS_IN_MMC
+	#define CONFIG_SPLASH_IMG_OFFSET		0x4c000
+	#define CONFIG_SPLASH_IMG_SIZE			0x19000
+#endif
+#elif defined(CONFIG_LCD_M215HW01)
 	#define CONFIG_IPU_V3H
 	#define CONFIG_VIDEO_MX5
-	#define CONFIG_IPU_CLKRATE	260000000
+	#define CONFIG_IPU_CLKRATE			260000000
 	#define CONFIG_SYS_CONSOLE_ENV_OVERWRITE
 	#define CONFIG_SYS_CONSOLE_OVERWRITE_ROUTINE
-	#define CONFIG_SYS_CONSOLE_IS_IN_ENV
-	#define LCD_BPP		LCD_COLOR16
+	#define LCD_BPP					LCD_COLOR16
 	#define CONFIG_CMD_BMP
 	#define CONFIG_BMP_8BPP
-	#define CONFIG_FB_BASE	(TEXT_BASE + 0x300000)
 	#define CONFIG_SPLASH_SCREEN_ALIGN
 	#define CONFIG_SYS_WHITE_ON_BLACK
+
+	#define CONFIG_IMX_PWM
+	#define IMX_PWM1_BASE    PWM1_BASE_ADDR
+	#define IMX_PWM2_BASE    PWM2_BASE_ADDR
+#else /* !CONFIG_MXC_EPDC !CONFIG_LCD_M215HW01 */
+	#define CONFIG_IPU_V3H
+	#define CONFIG_VIDEO_MX5
+	#define CONFIG_IPU_CLKRATE			260000000
+	#define CONFIG_SYS_CONSOLE_ENV_OVERWRITE
+	#define CONFIG_SYS_CONSOLE_OVERWRITE_ROUTINE
+	#define LCD_BPP					LCD_COLOR16
+	#define CONFIG_CMD_BMP
+	#define CONFIG_BMP_8BPP
+	#define CONFIG_SPLASH_SCREEN_ALIGN
+	#define CONFIG_SYS_WHITE_ON_BLACK
+
+	#define CONFIG_IMX_PWM
+	#define IMX_PWM1_BASE    PWM1_BASE_ADDR
+	#define IMX_PWM2_BASE    PWM2_BASE_ADDR
 #endif
+#endif /* CONFIG_SPLASH_SCREEN */
 #endif				/* __CONFIG_H */

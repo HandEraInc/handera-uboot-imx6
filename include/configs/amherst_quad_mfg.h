@@ -28,10 +28,8 @@
 #define CONFIG_MFG
 #define CONFIG_ARMV7	/* This is armv7 Cortex-A9 CPU core */
 #define CONFIG_MXC
-#define CONFIG_MX6DL
-#define CONFIG_MX6DL_DDR3
-#define CONFIG_MX6DL_SABRESD
-#define CONFIG_DDR_32BIT /* for DDR 32bit */
+#define CONFIG_MX6Q
+#define CONFIG_MX6Q_SABRESD
 #define CONFIG_FLASH_HEADER
 #define CONFIG_FLASH_HEADER_OFFSET 0x400
 #define CONFIG_MX6_CLK32	   32768
@@ -117,7 +115,7 @@
 #define CONFIG_RD_LOADADDR	(CONFIG_LOADADDR + 0x300000)
 
 #define CONFIG_BOOTARGS         "console=ttymxc0,115200 rdinit=/linuxrc "\
-				"enable_wait_mode=off nosmp"
+				"enable_wait_mode=off "
 #define CONFIG_BOOTCOMMAND      "bootm 0x10800000 0x10c00000"
 
 #define	CONFIG_EXTRA_ENV_SETTINGS					\
@@ -132,7 +130,7 @@
  * Miscellaneous configurable options
  */
 #define CONFIG_SYS_LONGHELP		/* undef to save memory */
-#define CONFIG_SYS_PROMPT		"MX6Solo SABRESD-MFG U-Boot > "
+#define CONFIG_SYS_PROMPT		"HandEra Amherst U-Boot > "
 #define CONFIG_AUTO_COMPLETE
 #define CONFIG_SYS_CBSIZE		256	/* Console I/O Buffer Size */
 /* Print Buffer Size */
@@ -264,7 +262,7 @@
  */
 #define CONFIG_NR_DRAM_BANKS	1
 #define PHYS_SDRAM_1		CSD0_DDR_BASE_ADDR
-#define PHYS_SDRAM_1_SIZE	(512 * 1024 * 1024)
+#define PHYS_SDRAM_1_SIZE	(1u * 1024 * 1024 * 1024)
 #define iomem_valid_addr(addr, size) \
 	(addr >= PHYS_SDRAM_1 && addr <= (PHYS_SDRAM_1 + PHYS_SDRAM_1_SIZE))
 

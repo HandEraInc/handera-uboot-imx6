@@ -3323,6 +3323,8 @@ mx6q_arm2_iram_config	: unconfig
 		}
 	@$(MKCONFIG) $(@:_config=) arm arm_cortexa8 mx6q_arm2 freescale mx6
 
+amherst_quad_mfg_config		\
+amherst_quad_config		\
 amherst_mfg_config		\
 amherst_config		: unconfig
 	@$(MKCONFIG) $(@:_config=) arm arm_cortexa8 amherst freescale mx6

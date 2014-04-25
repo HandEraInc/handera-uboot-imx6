@@ -1,8 +1,5 @@
 /*
- * Copyright (C) 2012-2013 HandEra, Inc.
- *
- * See file CREDITS for list of people who contributed to this
- * project.
+ * Copyright (C) 2013-2014 HandEra, Inc.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -257,11 +254,19 @@ int dram_init(void)
 
 static void setup_uart(void)
 {
+#if defined CONFIG_MX6Q
+	/* UART1 TXD */
+	mxc_iomux_v3_setup_pad(MX6Q_PAD_CSI0_DAT10__UART1_TXD);
+
+	/* UART1 RXD */
+	mxc_iomux_v3_setup_pad(MX6Q_PAD_CSI0_DAT11__UART1_RXD);
+#elif defined CONFIG_MX6DL
 	/* UART1 TXD */
 	mxc_iomux_v3_setup_pad(MX6DL_PAD_CSI0_DAT10__UART1_TXD);
 
 	/* UART1 RXD */
 	mxc_iomux_v3_setup_pad(MX6DL_PAD_CSI0_DAT11__UART1_RXD);
+#endif
 }
 
 #ifdef CONFIG_I2C_MXC
@@ -277,10 +282,18 @@ static void setup_i2c(unsigned int module_base)
 
 	switch (module_base) {
 	case I2C1_BASE_ADDR:
+#if defined CONFIG_MX6Q
+		/* i2c1 SDA */
+		mxc_iomux_v3_setup_pad(MX6Q_PAD_CSI0_DAT8__I2C1_SDA);
+
+		/* i2c1 SCL */
+		mxc_iomux_v3_setup_pad(MX6Q_PAD_CSI0_DAT9__I2C1_SCL);
+#elif defined CONFIG_MX6DL
 		/* i2c1 SDA */
 		mxc_iomux_v3_setup_pad(MX6DL_PAD_CSI0_DAT8__I2C1_SDA);
 		/* i2c1 SCL */
 		mxc_iomux_v3_setup_pad(MX6DL_PAD_CSI0_DAT9__I2C1_SCL);
+#endif
 
 		/* Enable i2c clock */
 		reg = readl(CCM_BASE_ADDR + CLKCTL_CCGR2);
@@ -289,13 +302,37 @@ static void setup_i2c(unsigned int module_base)
 
 		break;
 	case I2C2_BASE_ADDR:
+#if defined CONFIG_MX6Q
+		/* i2c2 SDA */
+		mxc_iomux_v3_setup_pad(MX6Q_PAD_EIM_D16__HDMI_TX_DDC_SDA);
+
+		/* i2c2 SCL */
+		mxc_iomux_v3_setup_pad(MX6Q_PAD_EIM_EB2__HDMI_TX_DDC_SCL);
+#elif defined CONFIG_MX6DL
+		/* i2c2 SDA */
+		mxc_iomux_v3_setup_pad(MX6DL_PAD_EIM_D16__HDMI_TX_DDC_SDA);
+		/* i2c2 SCL */
+		mxc_iomux_v3_setup_pad(MX6DL_PAD_EIM_EB2__HDMI_TX_DDC_SCL);
+#endif
+
+		/* Enable i2c clock */
+		reg = readl(CCM_BASE_ADDR + CLKCTL_CCGR2);
+		reg |= 0x300;
+		writel(reg, CCM_BASE_ADDR + CLKCTL_CCGR2);
 		break;
 	case I2C3_BASE_ADDR:
+#if defined CONFIG_MX6Q
+		/* GPIO_3 for I2C3_SCL */
+		mxc_iomux_v3_setup_pad(MX6Q_PAD_EIM_D17__I2C3_SCL);
+		/* GPIO_6 for I2C3_SDA */
+		mxc_iomux_v3_setup_pad(MX6Q_PAD_EIM_D18__I2C3_SDA);
+
+#elif defined CONFIG_MX6DL
 		/* GPIO_3 for I2C3_SCL */
 		mxc_iomux_v3_setup_pad(MX6DL_PAD_EIM_D17__I2C3_SCL);
 		/* GPIO_6 for I2C3_SDA */
 		mxc_iomux_v3_setup_pad(MX6DL_PAD_EIM_D18__I2C3_SDA);
-
+#endif
 		/* Enable i2c clock */
 		reg = readl(CCM_BASE_ADDR + CLKCTL_CCGR2);
 		reg |= 0xC00;
@@ -303,7 +340,7 @@ static void setup_i2c(unsigned int module_base)
 
 		break;
 	default:
-		printf("Invalid I2C base: 0x%x\n", module_base);
+		// Can't do printf here since
 		break;
 	}
 }
@@ -376,6 +413,22 @@ void spi_io_init(struct imx_spi_dev_t *dev)
 //#endif
 		break;
 	case ECSPI2_BASE_ADDR:
+#if defined CONFIG_MX6Q
+		/* SCLK */
+		mxc_iomux_v3_setup_pad(MX6Q_PAD_EIM_CS0__ECSPI2_SCLK);
+
+		/* MISO */
+		mxc_iomux_v3_setup_pad(MX6Q_PAD_EIM_OE__ECSPI2_MISO);
+
+		/* MOSI */
+		mxc_iomux_v3_setup_pad(MX6Q_PAD_EIM_CS1__ECSPI2_MOSI);
+
+		/* SS2 */
+		mxc_iomux_v3_setup_pad(MX6Q_PAD_EIM_D24__ECSPI2_SS2);
+
+		/* SS3 */
+		mxc_iomux_v3_setup_pad(MX6Q_PAD_EIM_D25__ECSPI2_SS3);
+#elif defined CONFIG_MX6DL
 		/* SCLK */
 		mxc_iomux_v3_setup_pad(MX6DL_PAD_EIM_CS0__ECSPI2_SCLK);
 
@@ -390,7 +443,7 @@ void spi_io_init(struct imx_spi_dev_t *dev)
 
 		/* SS3 */
 		mxc_iomux_v3_setup_pad(MX6DL_PAD_EIM_D25__ECSPI2_SS3);
-
+#endif
 		break;
 	case ECSPI3_BASE_ADDR:
 		/* ecspi3 fall through */
@@ -476,6 +529,56 @@ struct fsl_esdhc_cfg usdhc_cfg[4] = {
 	{USDHC4_BASE_ADDR, 1, 1, 1, 0},
 };
 
+#if defined CONFIG_MX6Q
+/*
+iomux_v3_cfg_t usdhc1_pads[] = {
+	MX6Q_PAD_SD1_CLK__USDHC1_CLK,
+	MX6Q_PAD_SD1_CMD__USDHC1_CMD,
+	MX6Q_PAD_SD1_DAT0__USDHC1_DAT0,
+	MX6Q_PAD_SD1_DAT1__USDHC1_DAT1,
+	MX6Q_PAD_SD1_DAT2__USDHC1_DAT2,
+	MX6Q_PAD_SD1_DAT3__USDHC1_DAT3,
+};*/
+
+iomux_v3_cfg_t usdhc2_pads[] = {
+	MX6Q_PAD_SD2_CLK__USDHC2_CLK,
+	MX6Q_PAD_SD2_CMD__USDHC2_CMD,
+	MX6Q_PAD_GPIO_4__USDHC2_CD,
+	MX6Q_PAD_GPIO_2__USDHC2_WP,
+	MX6Q_PAD_SD2_DAT0__USDHC2_DAT0,
+	MX6Q_PAD_SD2_DAT1__USDHC2_DAT1,
+	MX6Q_PAD_SD2_DAT2__USDHC2_DAT2,
+	MX6Q_PAD_SD2_DAT3__USDHC2_DAT3,
+};
+
+iomux_v3_cfg_t usdhc3_pads[] = {
+	MX6Q_PAD_SD3_CLK__USDHC3_CLK,
+	MX6Q_PAD_SD3_CMD__USDHC3_CMD,
+	MX6Q_PAD_SD3_DAT0__USDHC3_DAT0,
+	MX6Q_PAD_SD3_DAT1__USDHC3_DAT1,
+	MX6Q_PAD_SD3_DAT2__USDHC3_DAT2,
+	MX6Q_PAD_SD3_DAT3__USDHC3_DAT3,
+	// Last 4 data lines are either
+	// unused or GPIOs.
+/*	MX6Q_PAD_SD3_DAT4__USDHC3_DAT4,
+	MX6Q_PAD_SD3_DAT5__USDHC3_DAT5,
+	MX6Q_PAD_SD3_DAT6__USDHC3_DAT6,
+	MX6Q_PAD_SD3_DAT7__USDHC3_DAT7,*/
+};
+
+iomux_v3_cfg_t usdhc4_pads[] = {
+	MX6Q_PAD_SD4_CLK__USDHC4_CLK,
+	MX6Q_PAD_SD4_CMD__USDHC4_CMD,
+	MX6Q_PAD_SD4_DAT0__USDHC4_DAT0,
+	MX6Q_PAD_SD4_DAT1__USDHC4_DAT1,
+	MX6Q_PAD_SD4_DAT2__USDHC4_DAT2,
+	MX6Q_PAD_SD4_DAT3__USDHC4_DAT3,
+	MX6Q_PAD_SD4_DAT4__USDHC4_DAT4,
+	MX6Q_PAD_SD4_DAT5__USDHC4_DAT5,
+	MX6Q_PAD_SD4_DAT6__USDHC4_DAT6,
+	MX6Q_PAD_SD4_DAT7__USDHC4_DAT7,
+};
+#elif defined CONFIG_MX6DL
 /*
 iomux_v3_cfg_t usdhc1_pads[] = {
 	MX6DL_PAD_SD1_CLK__USDHC1_CLK,
@@ -524,6 +627,7 @@ iomux_v3_cfg_t usdhc4_pads[] = {
 	MX6DL_PAD_SD4_DAT6__USDHC4_DAT6,
 	MX6DL_PAD_SD4_DAT7__USDHC4_DAT7,
 };
+#endif
 
 int usdhc_gpio_init(bd_t *bis)
 {
@@ -543,8 +647,13 @@ int usdhc_gpio_init(bd_t *bis)
 			mxc_iomux_v3_setup_multiple_pads(usdhc2_pads,
 				sizeof(usdhc2_pads) /
 				sizeof(usdhc2_pads[0]));
+#if defined CONFIG_MX6Q
+			/* GPIO_18 - GPIO7[13] for SD2 PWR EN */
+			mxc_iomux_v3_setup_pad(MX6Q_PAD_GPIO_18__GPIO_7_13);
+#elif defined CONFIG_MX6DL
 			/* GPIO_18 - GPIO7[13] for SD2 PWR EN */
 			mxc_iomux_v3_setup_pad(MX6DL_PAD_GPIO_18__GPIO_7_13);
+#endif
 
 			/* Set as output */
 			reg = readl(GPIO7_BASE_ADDR + GPIO_GDIR);
@@ -976,6 +1085,99 @@ void lcd_enable(void)
 	reg &= ~0xC033;
 	writel(reg, CCM_BASE_ADDR + CLKCTL_CCGR3);
 
+#if defined CONFIG_MX6Q
+	/*
+	 * Align IPU1 HSP clock and IPU1 DIx pixel clock
+	 * with kernel setting to avoid screen flick when
+	 * booting into kernel. Developer should change
+	 * the relevant setting if kernel setting changes.
+	 * IPU1 HSP clock tree:
+	 * osc_clk(24M)->pll2_528_bus_main_clk(528M)->
+	 * periph_clk(528M)->mmdc_ch0_axi_clk(528M)->
+	 * ipu1_clk(264M)
+	 */
+	/* pll2_528_bus_main_clk */
+	/* divider */
+	writel(0x1, ANATOP_BASE_ADDR + 0x34);
+
+	/* periph_clk */
+	/* source */
+	reg = readl(CCM_BASE_ADDR + CLKCTL_CBCMR);
+	reg &= ~(0x3 << 18);
+	writel(reg, CCM_BASE_ADDR + CLKCTL_CBCMR);
+
+	reg = readl(CCM_BASE_ADDR + CLKCTL_CBCDR);
+	reg &= ~(0x1 << 25);
+	writel(reg, CCM_BASE_ADDR + CLKCTL_CBCDR);
+
+	/*
+	 * Check PERIPH_CLK_SEL_BUSY in
+	 * MXC_CCM_CDHIPR register.
+	 */
+	do {
+		udelay(5);
+		reg = readl(CCM_BASE_ADDR + CLKCTL_CDHIPR);
+	} while (reg & (0x1 << 5));
+
+	/* mmdc_ch0_axi_clk */
+	/* divider */
+	reg = readl(CCM_BASE_ADDR + CLKCTL_CBCDR);
+	reg &= ~(0x7 << 19);
+	writel(reg, CCM_BASE_ADDR + CLKCTL_CBCDR);
+
+	/*
+	 * Check MMDC_CH0PODF_BUSY in
+	 * MXC_CCM_CDHIPR register.
+	 */
+	do {
+		udelay(5);
+		reg = readl(CCM_BASE_ADDR + CLKCTL_CDHIPR);
+	} while (reg & (0x1 << 4));
+
+	/* ipu1_clk */
+	reg = readl(CCM_BASE_ADDR + CLKCTL_CSCDR3);
+	/* source */
+	reg &= ~(0x3 << 9);
+	/* divider */
+	reg &= ~(0x7 << 11);
+	reg |= (0x1 << 11);
+	writel(reg, CCM_BASE_ADDR + CLKCTL_CSCDR3);
+
+	/*
+	 * ipu1_pixel_clk_x clock tree:
+	 * osc_clk(24M)->pll2_528_bus_main_clk(528M)->
+	 * pll2_pfd_352M(452.57M)->ldb_dix_clk(64.65M)->
+	 * ipu1_di_clk_x(64.65M)->ipu1_pixel_clk_x(64.65M)
+	 */
+	/* pll2_pfd_352M */
+	/* disable */
+	writel(0x1 << 7, ANATOP_BASE_ADDR + 0x104);
+	/* divider */
+	writel(0x3F, ANATOP_BASE_ADDR + 0x108);
+	writel(0x15, ANATOP_BASE_ADDR + 0x104);
+
+	/* ldb_dix_clk */
+	/* source */
+	reg = readl(CCM_BASE_ADDR + CLKCTL_CS2CDR);
+	reg &= ~(0x3F << 9);
+	reg |= (0x9 << 9);
+	writel(reg, CCM_BASE_ADDR + CLKCTL_CS2CDR);
+	/* divider */
+	reg = readl(CCM_BASE_ADDR + CLKCTL_CSCMR2);
+	reg |= (0x3 << 10);
+	writel(reg, CCM_BASE_ADDR + CLKCTL_CSCMR2);
+
+	/* pll2_pfd_352M */
+	/* enable after ldb_dix_clk source is set */
+	writel(0x1 << 7, ANATOP_BASE_ADDR + 0x108);
+
+	/* ipu1_di_clk_x */
+	/* source */
+	reg = readl(CCM_BASE_ADDR + CLKCTL_CHSCCDR);
+	reg &= ~0xE07;
+	reg |= 0x803;
+	writel(reg, CCM_BASE_ADDR + CLKCTL_CHSCCDR);
+#elif defined CONFIG_MX6DL /* CONFIG_MX6Q */
 	/*
 	 * IPU1 HSP clock tree:
 	 * osc_clk(24M)->pll3_usb_otg_main_clk(480M)->
@@ -1039,6 +1241,7 @@ void lcd_enable(void)
 	reg &= ~0xE07;
 	reg |= 0x803;
 	writel(reg, CCM_BASE_ADDR + CLKCTL_CHSCCDR);
+#endif	/* CONFIG_MX6DL */
 
 	/* Enable ipu1/ipu1_dix/ldb_dix clocks. */
 	if (di == 1) {
@@ -1110,6 +1313,20 @@ int mx6_rgmii_rework(char *devname, int phy_addr)
 	return 0;
 }
 
+#if defined CONFIG_MX6Q
+iomux_v3_cfg_t enet_pads[] = {
+	MX6Q_PAD_ENET_MDIO__ENET_MDIO,
+	MX6Q_PAD_ENET_MDC__ENET_MDC,
+	MX6Q_PAD_ENET_TXD0__ENET_TDATA_0,
+	MX6Q_PAD_ENET_TXD1__ENET_TDATA_1,
+	MX6Q_PAD_ENET_TX_EN__ENET_TX_EN,
+	MX6Q_PAD_ENET_RXD0__ENET_RDATA_0,
+	MX6Q_PAD_ENET_RXD1__ENET_RDATA_1,
+	MX6Q_PAD_ENET_RX_ER__ENET_RX_ER,
+	MX6Q_PAD_ENET_CRS_DV__ENET_RX_EN,
+	MX6Q_PAD_GPIO_16__ENET_ANATOP_ETHERNET_REF_OUT,
+};
+#elif defined CONFIG_MX6DL
 iomux_v3_cfg_t enet_pads[] = {
 	MX6DL_PAD_ENET_MDIO__ENET_MDIO,
 	MX6DL_PAD_ENET_MDC__ENET_MDC,
@@ -1122,15 +1339,22 @@ iomux_v3_cfg_t enet_pads[] = {
 	MX6DL_PAD_ENET_CRS_DV__ENET_RX_EN,
 	MX6DL_PAD_GPIO_16__ENET_ANATOP_ETHERNET_REF_OUT,
 };
+#endif //CONFIG_MX6DL
 
 void enet_board_init(void)
 {
 	unsigned int reg;
 
 	iomux_v3_cfg_t enet_reset =
+#if defined CONFIG_MX6Q
+			(MX6Q_PAD_GPIO_3__GPIO_1_3 &
+			~MUX_PAD_CTRL_MASK)           |
+			 MUX_PAD_CTRL(0x88);
+#elif defined CONFIG_MX6DL
 			(MX6DL_PAD_GPIO_3__GPIO_1_3 &
 			~MUX_PAD_CTRL_MASK)           |
 			 MUX_PAD_CTRL(0x88);
+#endif //CONFIG_MX6DL
 
 	mxc_iomux_v3_setup_multiple_pads(enet_pads,
 			ARRAY_SIZE(enet_pads));
@@ -1140,7 +1364,12 @@ void enet_board_init(void)
 	// Only need to configure the mask register to enable
 	// the interrupt. Default for direction and interrupt
 	// configuration is input and low level already.
+#if defined CONFIG_MX6Q
+	mxc_iomux_v3_setup_pad(MX6Q_PAD_KEY_COL2__GPIO_4_10);
+#elif defined CONFIG_MX6DL
 	mxc_iomux_v3_setup_pad(MX6DL_PAD_KEY_COL2__GPIO_4_10);
+#endif //CONFIG_MX6DL
+
 	reg = readl(GPIO4_BASE_ADDR + GPIO_IMR);
 	reg |= (1 << 10);
 	writel(reg, GPIO4_BASE_ADDR + GPIO_IMR);
@@ -1297,7 +1526,7 @@ int board_late_init(void)
 
 int checkboard(void)
 {
-	printf("Board: %s-Module: %s Board: 0x%x [",
+	printf("Board: %s-Amherst: %s Board: 0x%x [",
 	mx6_chip_name(),
 	mx6_board_rev_name(),
 	fsl_system_rev);

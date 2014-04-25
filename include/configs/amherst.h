@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 HandEra, Inc.
+ * Copyright (C) 2013-2014 HandEra, Inc.
  *
  * Configuration settings for the MX6Solo Amherst board.
  * The board is configured with SOLO and 32-bit DDR bus-width.
