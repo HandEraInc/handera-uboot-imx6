@@ -932,8 +932,13 @@ int fec_init(struct eth_device *dev, bd_t *bd)
 	fecp->emrbr = PKT_MAXBLR_SIZE;
 
 #if defined(CONFIG_MX6Q) || defined(CONFIG_MX6DL)
+#ifndef CONFIG_RMII_QUIRK
 	fecp->rcr &= ~(0x100);
 	fecp->rcr |= 0x44;
+#else
+	fecp->rcr &= ~(0x40);
+	fecp->rcr |= 0x104;
+#endif
 #endif
 	/*
 	 * Setup Buffers and Buffer Desriptors
