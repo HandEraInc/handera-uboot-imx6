@@ -1498,6 +1498,8 @@ int check_recovery_cmd_file(void)
 	recovery_mode = check_and_clean_recovery_flag();
 
 	/* Check Recovery Combo Button press or not. */
+/* DF TODO */
+#if 0
 	mxc_iomux_v3_setup_pad(MX6X_IOMUX(PAD_GPIO_5__GPIO_1_5));
 
 	gpio_direction_input(GPIO_VOL_DN_KEY);
@@ -1506,6 +1508,7 @@ int check_recovery_cmd_file(void)
 		button_pressed = 1;
 		printf("Recovery key pressed\n");
 	}
+#endif
 
 	return recovery_mode || button_pressed;
 }
@@ -1589,3 +1592,23 @@ int checkboard(void)
 
 	return 0;
 }
+
+#ifdef CONFIG_IMX_UDC
+
+void udc_pins_setting(void)
+{
+/* DF TODO */
+#if 0
+	mxc_iomux_v3_setup_pad(MX6X_IOMUX(PAD_ENET_RX_ER__ANATOP_USBOTG_ID));
+	mxc_iomux_v3_setup_pad(MX6X_IOMUX(PAD_EIM_D22__GPIO_3_22));
+	mxc_iomux_v3_setup_pad(MX6X_IOMUX(PAD_ENET_TXD1__GPIO_1_29));
+
+	/* USB_OTG_PWR = 0 */
+	gpio_direction_output(USB_OTG_PWR, 0);
+	/* USB_H1_POWER = 1 */
+	gpio_direction_output(USB_H1_POWER, 1);
+
+	mxc_iomux_set_gpr_register(1, 13, 1, 0);
+#endif
+}
+#endif

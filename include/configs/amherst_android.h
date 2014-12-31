@@ -24,17 +24,18 @@
 #ifndef AMHERST_ANDROID_H
 #define AMHERST_ANDROID_H
 
-#include "amhesrt.h"
+#include "amherst.h"
 
 #define CONFIG_USB_DEVICE
 #define CONFIG_IMX_UDC		       1
 #define CONFIG_FASTBOOT		       1
 #define CONFIG_FASTBOOT_STORAGE_EMMC_SATA
+/* DF TODO */
 #define CONFIG_FASTBOOT_VENDOR_ID      0x18d1
 #define CONFIG_FASTBOOT_PRODUCT_ID     0x0d02
 #define CONFIG_FASTBOOT_BCD_DEVICE     0x311
-#define CONFIG_FASTBOOT_MANUFACTURER_STR  "Freescale"
-#define CONFIG_FASTBOOT_PRODUCT_NAME_STR "i.mx6q Sabre Smart Device"
+#define CONFIG_FASTBOOT_MANUFACTURER_STR  "HandEra"
+#define CONFIG_FASTBOOT_PRODUCT_NAME_STR "Amherst Smart Device"
 #define CONFIG_FASTBOOT_INTERFACE_STR	 "Android fastboot"
 #define CONFIG_FASTBOOT_CONFIGURATION_STR  "Android fastboot"
 #define CONFIG_FASTBOOT_SERIAL_NUM	"12345"
@@ -75,7 +76,11 @@
 #define	CONFIG_EXTRA_ENV_SETTINGS					\
 		"netdev=eth0\0"						\
 		"ethprime=FEC0\0"					\
-		"splashimage=0x30000000\0"				\
-		"splashpos=m,m\0"					\
-		"lvds_num=1\0"
+		"fastboot_dev=mmc3\0"					\
+		"bootcmd=booti mmc3\0"					\
+		"bootargs=console=ttymxc0,115200 init=/init nosmp "	\
+		"video=mxcfb0:dev=hdmi,1280x720M@60,if=RGB24 video=mxcfb1:off video=mxcfb2:off "	\
+		"fbmem=28M vmalloc=400M fb0base=0x27b00000 androidboot.console=ttymxc0 "	\
+		"androidboot.hardware=freescale\0"			
+
 #endif
