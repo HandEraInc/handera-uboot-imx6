@@ -79,8 +79,9 @@
 		"fastboot_dev=mmc3\0"					\
 		"bootcmd=booti mmc3\0"					\
 		"bootargs=console=ttymxc0,115200 init=/init nosmp "	\
-		"video=mxcfb0:dev=hdmi,1280x720M@60,if=RGB24 video=mxcfb1:off video=mxcfb2:off "	\
-		"fbmem=28M vmalloc=400M fb0base=0x27b00000 androidboot.console=ttymxc0 "	\
+		"video=mxcfb0:dev=hdmi,1280x720M@60,if=RGB24" \
+		"video=mxcfb1:off video=mxcfb2:off "	\
+		"androidboot.console=ttymxc0 "	\
 		"androidboot.hardware=freescale\0"			
 
 #endif
