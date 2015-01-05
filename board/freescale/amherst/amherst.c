@@ -304,15 +304,15 @@ static void setup_i2c(unsigned int module_base)
 	case I2C2_BASE_ADDR:
 #if defined CONFIG_MX6Q
 		/* i2c2 SDA */
-		mxc_iomux_v3_setup_pad(MX6Q_PAD_EIM_D16__HDMI_TX_DDC_SDA);
+		mxc_iomux_v3_setup_pad(MX6Q_PAD_EIM_D16__I2C2_SDA);
 
 		/* i2c2 SCL */
-		mxc_iomux_v3_setup_pad(MX6Q_PAD_EIM_EB2__HDMI_TX_DDC_SCL);
+		mxc_iomux_v3_setup_pad(MX6Q_PAD_EIM_EB2__I2C2_SCL);
 #elif defined CONFIG_MX6DL
 		/* i2c2 SDA */
-		mxc_iomux_v3_setup_pad(MX6DL_PAD_EIM_D16__HDMI_TX_DDC_SDA);
+		mxc_iomux_v3_setup_pad(MX6DL_PAD_EIM_D16__I2C2_SDA);
 		/* i2c2 SCL */
-		mxc_iomux_v3_setup_pad(MX6DL_PAD_EIM_EB2__HDMI_TX_DDC_SCL);
+		mxc_iomux_v3_setup_pad(MX6DL_PAD_EIM_EB2__I2C2_SCL);
 #endif
 
 		/* Enable i2c clock */
@@ -340,7 +340,8 @@ static void setup_i2c(unsigned int module_base)
 
 		break;
 	default:
-		// Can't do printf here since
+		// Can't do printf here as this will cause U-boot
+		// to hang.
 		break;
 	}
 }
