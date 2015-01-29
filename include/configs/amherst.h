@@ -128,18 +128,18 @@
 	"bootcmd_net=run bootargs_base bootargs_nfs; "			\
 		"tftpboot ${loadaddr} ${kernel}; bootm\0"		\
 	"bootargs_mmc=setenv bootargs ${bootargs} ip=dhcp "		\
-		"root=/dev/mmcblk0p1 rootwait "				\
+		"root=/dev/mmcblk0p2 rootwait "				\
+		"consoleblank=0 vt.global_cursor_default=0 "		\
 		"video=mxcfb0:dev=hdmi,1920x1080M@60,if=RGB24 " 	\
 		"video=mxcfb1:dev=ldb,LDB-1080P75,if=RGB666\0" 		\
 	"bootargs_SD=setenv bootargs ${bootargs} ip=dhcp "		\
 		"root=/dev/mmcblk1p2 rootwait "				\
 		"video=mxcfb0:dev=hdmi,1920x1080M@60,if=RGB24 " 	\
 		"video=mxcfb1:dev=ldb,LDB-1080P75,if=RGB666\0" 		\
-	"bootcmd_mmc=run bootargs_base bootargs_mmc; "			\
-	"mmc dev 3; "							\
-	"mmc read ${loadaddr} 0x800 0x2000; bootm\0"			\
 	"bootcmd_SD=run bootargs_base bootargs_SD; "			\
 	"fatload mmc 1 ${loadaddr} uImage; bootm\0"                     \
+	"bootcmd_mmc=run bootargs_base bootargs_mmc; "			\
+	"fatload mmc 3 ${loadaddr} uImage; bootm\0"                     \
 	"bootcmd=run bootcmd_mmc\0"					\
 
 
